@@ -32,14 +32,13 @@ VOCAB_SIZE = len(word_to_ix)
 NUM_LABELS = 2
 
 class BoWClassifier(nn.Module):
-	def __init__(self, num_labels, vocab_size):
-		super(BoWClassifier, self).__init__()
+  def __init__(self, num_labels, vocab_size):
+    super(BoWClassifier, self).__init__()
+    # Parameters of the model - linear layer (vocab x 2)
+    self.linear = nn.Linear(vocab_size, num_labels)
 
-		# Parameters of the model - linear layer (vocab x 2)
-		self.linear = nn.Linear(vocab_size, num_labels)
-
-	def forward(self, bow_vec):
-		return(F.log_softmax(self.linear(bow_vec), dim = 1))
+  def forward(self, bow_vec):
+    return(F.log_softmax(self.linear(bow_vec), dim = 1))
 
 
 def bow_vectorize(sentence, word_to_ix):
