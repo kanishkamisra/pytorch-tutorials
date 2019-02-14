@@ -19,7 +19,7 @@ class CNN(nn.Module):
     nn.init.uniform_(self.embedding.weight, -0.25, 0.25)
 
     # 1d convolutions
-    self.conv_1d = nn.Conv1d(in_channels = emb_size, out_channels = filter_size, kernel_size = window_size, stride = 1, padding = 0, dilations = 1, groups = 1, bias = True)
+    self.conv_1d = nn.Conv1d(in_channels = emb_size, out_channels = filter_size, kernel_size = window_size, stride = 1, padding = 0, dilation = 1, groups = 1, bias = True)
 
     # relu unit
     self.relu = nn.ReLU()
@@ -64,9 +64,9 @@ FILTER_SIZE = 64
 # print("number of words = {}, class size = {}.".format(nwords, CLASS_SIZE))
 
 # initialize the model
-model = CNN(nwords, EMB_SIZE, FILTER_SIZE, WIN_SIZE, ntags)
+model = CNN(nwords, EMB_SIZE, FILTER_SIZE, WIN_SIZE, CLASS_SIZE)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(mode.parameters())
+optimizer = optim.Adam(model.parameters())
 
 type = torch.LongTensor
 use_cuda = torch.cuda.is_available()
@@ -86,14 +86,25 @@ for ITER in range(100):
     words_tensor = torch.tensor(words).type(type)
     tag_tensor = torch.tensor([tag]).type(type)
     scores = model(words_tensor)
-    predict = scores[0].argmax().items()
+    predict = scores[0].argmax().item()
     if predict == tag:
       train_correct += 1
 
     loss = criterion(scores, tag_tensor)
-    train_loss += my_loss.item()
+    train_loss += loss.item()
 
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+  print("iter %r: train loss/sent = %.4f, acc = %.4f, time = %.2fs" % (ITER, train_loss/len(train), train_correct/len(train), time.time()-start))
 
+  test_corret = 0.0
+
+  for _, wids, tag in dev:
+    if len(words) < WIN_SIZE:
+      words += [0] * (WIN_SIZE - len(words))
+    words_tensor = torch.tensor(wids).type(type)
+    scores = model(words_tensor)
+    if predict == tag:
+      test_correct += 1
+    print("iter %r: test acc = %.4f" % (ITER, test_correct/len(dev)))
