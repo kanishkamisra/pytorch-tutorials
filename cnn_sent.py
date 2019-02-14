@@ -24,7 +24,7 @@ dev = list(read_data("./data/sentence_classification/dev.txt"))
 print(len(w2i))
 test = list(read_data("./data/sentence_classification/test.txt"))
 print(len(w2i))
-# print(t2i)
+print(test)
 
 EMB_SIZE = 64
 WINDOW_SIZE = 3
@@ -55,7 +55,7 @@ class CNN(nn.Module):
     
     self.linear = nn.Linear(sum(self.FILTER_MAPS), self.CLASS_SIZE)
   
-  def get_convolution(self, i):
+  def get_conv(self, i):
     return(getattr(self, f'conv_{i}'))
 
   def forward(self, input):
