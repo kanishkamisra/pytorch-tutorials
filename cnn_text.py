@@ -98,13 +98,14 @@ for ITER in range(100):
     optimizer.step()
   print("iter %r: train loss/sent = %.4f, acc = %.4f, time = %.2fs" % (ITER, train_loss/len(train), train_correct/len(train), time.time()-start))
 
-  test_corret = 0.0
+  test_correct = 0.0
 
-  for _, wids, tag in dev:
+  for words, tag in dev:
     if len(words) < WIN_SIZE:
       words += [0] * (WIN_SIZE - len(words))
-    words_tensor = torch.tensor(wids).type(type)
-    scores = model(words_tensor)
+    words_tensor = torch.tensor(words).type(type)
+    scores = model(words_tensor)[0]
+    predict = scores.argmax().item()
     if predict == tag:
       test_correct += 1
     print("iter %r: test acc = %.4f" % (ITER, test_correct/len(dev)))
