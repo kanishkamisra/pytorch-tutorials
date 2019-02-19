@@ -15,7 +15,7 @@ class CNN(nn.Module):
     # Embedding layer
     self.embedding = nn.Embedding(nwords, emb_size)
 
-    # uniform initialization 
+    # uniform initialization
     nn.init.uniform_(self.embedding.weight, -0.25, 0.25)
 
     # 1d convolutions
