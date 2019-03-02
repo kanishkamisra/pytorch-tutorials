@@ -33,9 +33,12 @@ files = ["train", "test", "dev"]
 
 train, test, dev = [list(read_snli("../../snli_1.0/snli_1.0_{}.txt".format(f))) for f in files]
 
-# print(l2i)
+print(len(train))
+print("labels: {}".format(l2i))
 
 # load glove vector space and store word vectors
+print("loading vectors")
+
 glove = KeyedVectors.load_word2vec_format("../../pretrained_vectors/glove_300d_word2vec.txt")
 pretrained_glove = np.random.uniform(-0.25, 0.25, (len(w2i), 300))
 print("GloVe embeddings vocab size: {}".format(len(pretrained_glove)))
@@ -47,6 +50,42 @@ for key in glove.vocab.keys():
   else:
     continue
 
+print("Initializing model")
+
 decomp_model = model.Decomp(EMB_SIZE = 300, HIDDEN_SIZE = 100, OUTPUT_SIZE = 3, VOCAB = len(w2i))
-decomp_model.embedding.weight.data.copy_(torch.from_numpy(pretrained_glove))
-decomp_model.embedding.weight.requires_grad = False
+decomp_model.embed.weight.data.copy_(torch.from_numpy(pretrained_glove))
+decomp_model.embed.weight.requires_grad = False
+
+criterion = nn.NLLLoss()
+optimizer = optim.Adam(decomp_model.parameters(), lr = 1e-3)
+
+var_type = torch.LongTensor
+use_cuda = torch.cuda.is_available()
+
+if use_cuda:
+  var_type = torch.cuda.LongTensor
+  decomp_model.cuda()
+
+print("Real: {}".format(train[1]))
+
+sent1, sent2, tag = [x for x in train[1]]
+sent1_tensor = torch.tensor(sent1).type(var_type)
+sent2_tensor = torch.tensor(sent2).type(var_type)
+tag_tensor = torch.tensor(tag).type(var_type)
+scores = decomp_model(sent1_tensor, sent2_tensor)
+print("Scores:{}".format(scores))
+predict = scores.argmax().item()
+print("Predicted: {}".format(predict))
+
+
+#for ITER in range(100):
+#  random.shuffle(train):
+#  train_loss = 0.0
+#  train_correct = 0.0
+#  start = time.time()
+#  for sent1, sent2, tag in train:
+#    sent1_tensor = torch.tensor(sent1).type(var_type)
+#    sent2_tensor = torch.tensor(sent2).type(var_type)
+#    tag_tensor = torch.tensor(tag).type(var_type)
+#    scores = model(sent1_tensor, sent2_tensor)
+#    predict 
